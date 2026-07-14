@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npm run clean && next dev",
     "build": "next build",
+    "test": "npm run ci:smoke",
     "ci:smoke": "node scripts/ci-smoke-guardrails.mjs",
     "lint": "ESLINT_USE_FLAT_CONFIG=false eslint src --ext .ts,.tsx,.js,.jsx",
     "type-check": "tsc --noEmit",
@@ -19,15 +20,15 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.969.0",
+    "@aws-sdk/client-s3": "^3.1086.0",
     "@axiomhq/js": "^1.4.0",
     "@axiomhq/logging": "^0.2.0",
     "@axiomhq/nextjs": "^0.2.0",
     "@neondatabase/serverless": "^0.10.4",
     "@next-auth/prisma-adapter": "^1.0.7",
-    "@posthog/nextjs-config": "^1.8.13",
-    "@prisma/adapter-neon": "^6.4.1",
-    "@prisma/client": "^6.14.0",
+    "@posthog/nextjs-config": "^1.9.68",
+    "@prisma/adapter-neon": "^6.19.3",
+    "@prisma/client": "^6.19.3",
     "@serwist/next": "^9.0.10",
     "@stripe/react-stripe-js": "^3.9.0",
     "@stripe/stripe-js": "^7.8.0",
@@ -39,18 +40,18 @@
     "@upstash/redis": "^1.34.3",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
-    "axios": "^1.12.0",
+    "axios": "^1.18.1",
     "crisp-sdk-web": "^1.0.25",
     "eslint": "^9.33.0",
     "framer-motion": "^12.23.12",
     "jsonwebtoken": "^9.0.3",
     "localforage": "^1.10.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "lru-cache": "^11.2.4",
     "lucide-react": "^0.539.0",
     "mailgun.js": "^12.6.1",
-    "next": "^16.0.10",
-    "next-auth": "^4.24.11",
+    "next": "^16.2.10",
+    "next-auth": "^4.24.14",
     "next-themes": "^0.4.6",
     "nextjs-toploader": "^3.8.16",
     "posthog-js": "^1.266.0",
@@ -75,16 +76,16 @@
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "autoprefixer": "^10.4.21",
-    "daisyui": "^5.0.50",
-    "eslint-config-next": "^15.4.6",
+    "daisyui": "^5.6.18",
+    "eslint-config-next": "^15.5.7",
     "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-boundaries": "^5.4.0",
+    "eslint-plugin-boundaries": "^7.0.2",
     "eslint-plugin-import": "^2.32.0",
-    "postcss": "^8.5.6",
-    "prisma": "^6.14.0",
+    "postcss": "^8.5.19",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4.1.12",
     "typescript": "5.9.2",
-    "ws": "^8.18.0"
+    "ws": "^8.21.0"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -92,7 +93,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/10x-oss/nextjs-saas-boilerplate.git"
+    "url": "https://github.com/alexmorris10x/nextjs-saas-boilerplate.git"
   },
   "keywords": [
     "nextjs",

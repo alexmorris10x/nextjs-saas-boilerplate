@@ -1,53 +1,19 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x.x   | :white_check_mark: |
+Security fixes are applied to the latest code on `main` and, when practical, the latest tagged release.
 
-## Reporting a Vulnerability
+## Report a vulnerability
 
-We take security seriously. If you discover a security vulnerability, please report it responsibly.
+Do not open a public issue for a suspected vulnerability. Use [GitHub private vulnerability reporting](https://github.com/alexmorris10x/nextjs-saas-boilerplate/security/advisories/new) and include reproduction steps, impact, affected versions, and any suggested mitigation.
 
-### How to Report
+Reports are reviewed in good faith. Response and remediation timing depend on severity, reproducibility, and maintainer availability; this project does not promise a fixed response SLA.
 
-1. **Do not** open a public GitHub issue for security vulnerabilities
-2. Email security concerns to the maintainers privately
-3. Include as much detail as possible:
-   - Type of vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if any)
+Confirmed vulnerabilities will be documented through a GitHub security advisory or release notes when disclosure is appropriate.
 
-### What to Expect
+## Scope
 
-- Acknowledgment of your report within 48 hours
-- Regular updates on our progress
-- Credit in the release notes (if desired)
+This policy covers the boilerplate source, its default configuration, and code maintained in this repository. Vulnerabilities in Stripe, PostHog, database providers, hosting platforms, or other third-party services should also be reported to the affected provider.
 
-### Scope
-
-This security policy applies to:
-- The boilerplate source code
-- Official dependencies and their configurations
-- Documentation and setup guides
-
-### Out of Scope
-
-- Third-party services (Stripe, PostHog, etc.) - report to those providers
-- Your own modifications to the boilerplate
-- Hosting environment issues
-
-## Security Best Practices
-
-When using this boilerplate:
-
-1. **Never commit secrets** - Use environment variables
-2. **Keep dependencies updated** - Run `npm audit` regularly
-3. **Use HTTPS** in production
-4. **Configure CORS properly** for your domain
-5. **Review Stripe webhook signatures** before processing
-6. **Enable rate limiting** for API routes
-
-Thank you for helping keep this project secure!
+Deployments created from this boilerplate are operated by their own maintainers. Keep dependencies current, use unique production secrets, validate webhook signatures, configure trusted origins and rate limits, and enable the security controls provided by the deployment platform.

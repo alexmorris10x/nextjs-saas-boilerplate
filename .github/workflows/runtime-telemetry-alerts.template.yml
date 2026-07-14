@@ -68,6 +68,8 @@ on:
       TELEGRAM_THREAD_ID:
         required: false
 
+permissions: {}
+
 jobs:
   monitor:
     name: Evaluate telemetry thresholds

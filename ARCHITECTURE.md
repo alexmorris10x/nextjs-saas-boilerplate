@@ -1302,4 +1302,4 @@ module.exports = {
 
 ---
 
-*This document is part of the [Next.js SaaS Boilerplate](https://github.com/10x-oss/nextjs-saas-boilerplate) project.*
+*This document is part of the [Next.js SaaS Boilerplate](https://github.com/alexmorris10x/nextjs-saas-boilerplate) project.*

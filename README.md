@@ -39,7 +39,7 @@ Every pattern exists for a reason. This documentation explains not just *what* t
 
 ```bash
 # Clone the repository
-git clone https://github.com/10x-oss/nextjs-saas-boilerplate.git
+git clone https://github.com/alexmorris10x/nextjs-saas-boilerplate.git
 cd nextjs-saas-boilerplate
 
 # Install dependencies
@@ -529,6 +529,7 @@ This template expects `$exception` events from PostHog and Axiom error logs, mat
 |---------|-------------|
 | `npm run dev` | Start development server (clears `.next` cache first) |
 | `npm run build` | Production build |
+| `npm test` | Run the repository's smoke regression suite |
 | `npm run ci:smoke` | Local CI smoke guardrails (checkout/webhook/header assertions) |
 | `npm run start` | Start production server |
 | `npm run lint` | ESLint check (includes boundary enforcement) |
@@ -543,6 +544,8 @@ This template expects `$exception` events from PostHog and Axiom error logs, mat
 ## Security
 
 See [SECURITY.md](SECURITY.md) for full security policy.
+
+For ordinary questions and bugs, see [SUPPORT.md](SUPPORT.md). Do not post secrets or vulnerability details in public issues.
 
 **Key protections built in:**
 - CSRF protection via SameSite cookies
@@ -560,4 +563,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-Built with care by [10x-oss](https://github.com/10x-oss)
+Built with care by [alexmorris10x](https://github.com/alexmorris10x)

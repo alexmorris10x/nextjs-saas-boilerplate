@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `.github/workflows/ci-smoke-guardrails.yml`
   - `npm run ci:smoke` package script
 - README production checklist updates for local + CI smoke guardrail usage.
+- Canonical project links now point to `alexmorris10x`; OSS security reporting, support, ownership, dependency maintenance, and workflow permissions are explicit.
 
 ## [1.0.0] - 2025-01-15
 

@@ -10,6 +10,8 @@ concurrency:
   group: runtime-telemetry-alerts
   cancel-in-progress: false
 
+permissions: {}
+
 jobs:
   runtime-telemetry-alerts:
     uses: ./.github/workflows/runtime-telemetry-alerts.template.yml
