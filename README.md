@@ -28,12 +28,12 @@ Every pattern exists for a reason. This documentation explains not just *what* t
 
 ## Requirements
 
-- **Node.js 18+** — Required for modern JavaScript features
+- **Node.js 20.9+** — Required by Next.js 16
 - **PostgreSQL database** — Neon, Supabase, or self-hosted
 - **Stripe account** — For payment processing
 - **OAuth credentials** — Google (and optionally GitHub)
 
-> **Why these requirements?** Node 18+ provides native fetch and modern async features. PostgreSQL is battle-tested for transactional SaaS workloads. Stripe handles PCI compliance so you don't have to.
+> **Why these requirements?** Next.js 16 requires Node 20.9 or newer. PostgreSQL is battle-tested for transactional SaaS workloads. Stripe handles PCI compliance so you don't have to.
 
 ## Quick Start
 
