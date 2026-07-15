@@ -39,7 +39,7 @@
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.3",
     "@vercel/analytics": "^1.5.0",
-    "@vercel/speed-insights": "^1.2.0",
+    "@vercel/speed-insights": "^2.0.0",
     "axios": "^1.18.1",
     "crisp-sdk-web": "^1.0.25",
     "eslint": "^9.33.0",
