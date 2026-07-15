@@ -56,7 +56,7 @@
     "nextjs-toploader": "^3.8.16",
     "posthog-js": "^1.266.0",
     "posthog-node": "^5.8.4",
-    "postmark": "^4.0.5",
+    "postmark": "^5.1.0",
     "react": "^19.1.4",
     "react-dom": "^19.1.4",
     "react-tooltip": "^5.29.1",
