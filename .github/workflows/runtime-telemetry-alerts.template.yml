@@ -75,8 +75,6 @@ jobs:
     name: Evaluate telemetry thresholds
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      contents: read
 
     env:
       APP_NAME: ${{ inputs.app_name }}
