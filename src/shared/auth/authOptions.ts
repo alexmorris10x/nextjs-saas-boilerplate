@@ -47,7 +47,9 @@ function createSafeAdapter(): Adapter {
     async getUserByEmail(email) {
       const user = await baseAdapter.getUserByEmail!(email);
 
-      if (user) {
+      // Email magic-link users never have Account rows but do have emailVerified;
+      // only an unverified user without accounts is a failed OAuth sign-up
+      if (user && !user.emailVerified) {
         // Check if this user has any linked accounts
         const accountCount = await prisma.account.count({
           where: { userId: user.id },

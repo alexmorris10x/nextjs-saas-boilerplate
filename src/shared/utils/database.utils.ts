@@ -1,6 +1,6 @@
 import "server-only";
 import { PrismaClient } from "@prisma/client";
-import { Pool, neonConfig } from "@neondatabase/serverless";
+import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
 // Enable WebSocket for environments that need it (local dev with Node < 22)
@@ -28,9 +28,9 @@ function createPrismaClient(): PrismaClient {
     return new PrismaClient();
   }
 
-  const pool = new Pool({ connectionString });
-  // @ts-expect-error - PrismaNeon expects PoolConfig but Pool works correctly
-  const adapter = new PrismaNeon(pool);
+  // PrismaNeon (adapter-neon 6.x) takes a PoolConfig and creates the pool itself.
+  // Passing a Pool instance loses the connection string and silently targets localhost.
+  const adapter = new PrismaNeon({ connectionString });
 
   return new PrismaClient({
     adapter,
