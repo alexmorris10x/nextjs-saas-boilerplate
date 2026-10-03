@@ -483,45 +483,7 @@ Use this checklist before your first production release:
   - Axiom logger transport is configured and sending logs from server/runtime paths.
 - [ ] Deploy and validate runtime smoke checks:
   - Run `npm run ci:smoke` locally before merge to validate checkout/webhook/header guardrails.
-  - Keep `.github/workflows/ci-smoke-guardrails.yml` enabled for push/PR validation.
-  - Add required GitHub secrets for telemetry queries and Telegram notifications (details below).
-  - Enable `.github/workflows/runtime-telemetry-alerts.yml` by setting repo variables.
-  - Keep thresholds aligned with free-tier budgets and adjust with repository vars when needed.
-
-### Runtime telemetry alerts setup (Telegram)
-
-1. Keep the reusable workflow as-is at `.github/workflows/runtime-telemetry-alerts.template.yml`.
-2. Enable the scheduled entrypoint `.github/workflows/runtime-telemetry-alerts.yml` in your repo (already present).
-3. Set GitHub **Secrets**:
-   - `POSTHOG_HOST` (optional, default `https://us.i.posthog.com`)
-   - `POSTHOG_PROJECT_ID` (required for PostHog exception count)
-   - `POSTHOG_PERSONAL_API_KEY` (required for PostHog queries)
-   - `AXIOM_QUERY_DOMAIN` (optional, default `us-east-1.aws.edge.axiom.co`)
-   - `AXIOM_API_TOKEN` (required for Axiom APL query)
-   - `AXIOM_DATASET` (required for Axiom query)
-   - `TELEGRAM_BOT_TOKEN`
-   - `TELEGRAM_CHAT_ID`
-   - `TELEGRAM_THREAD_ID` (optional for forum-style topics)
-4. Set GitHub **Variables**:
-   - `RUNTIME_APP_NAME` (defaults to repo name)
-   - `RUNTIME_BASE_URL` (your production app URL, e.g., `https://app.example.com`)
-   - `RUNTIME_TELEMETRY_WINDOW_MINUTES` (default `60`)
-   - `RUNTIME_POSTHOG_EXCEPTION_THRESHOLD` (default `5`)
-   - `RUNTIME_AXIOM_ERROR_THRESHOLD` (default `5`)
-   - `RUNTIME_AXIOM_ERROR_APL` (optional Axiom filter override)
-   - `RUNTIME_HTTP_CHECKS_ENABLED` (default `true`)
-   - `RUNTIME_ALERTS_ENABLED` (`true` to send Telegram alerts)
-   - `RUNTIME_TELEMETRY_DRY_RUN` (`true` to evaluate without sending)
-
-If `RUNTIME_ALERTS_ENABLED` is `false` or `RUNTIME_TELEMETRY_DRY_RUN` is `true`, the workflow evaluates thresholds but never sends Telegram messages (`no-alert` behavior).
-
-For Axiom filtering defaults, start with:
-
-```
-level == "error" or severity == "error" or severity_text == "error"
-```
-
-This template expects `$exception` events from PostHog and Axiom error logs, matching this boilerplate's existing `PostHog` and `Axiom` instrumentation.
+  - This template uses no GitHub Actions (private repos would spend Actions minutes): run lint, type check, tests and `npm run ci:smoke` locally, and let the Vercel build gate deploys. Put scheduled jobs in Vercel Cron.
 
 ## Scripts
 
