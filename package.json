@@ -55,7 +55,6 @@
     "next-themes": "^0.4.6",
     "nextjs-toploader": "^3.8.16",
     "posthog-js": "^1.435.2",
-    "posthog-node": "^5.54.1",
     "postmark": "^4.0.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

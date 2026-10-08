@@ -5,7 +5,7 @@ import ToastViewport from "@/shared/toast/ToastViewport";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "./providers";
-import PostHogClientProvider from "./providers/PostHogProvider";
+import ErrorTrackingProvider from "./providers/ErrorTrackingProvider";
 import ClientLayout from "./ClientLayout";
 
 interface AppShellProps {
@@ -19,7 +19,7 @@ export default function AppShell({ children, initialSession }: AppShellProps) {
 
   return (
     <Suspense fallback={null}>
-      <PostHogClientProvider>
+      <ErrorTrackingProvider>
         <Providers session={initialSession}>
           <ClientLayout>{children}</ClientLayout>
         </Providers>
@@ -41,7 +41,7 @@ export default function AppShell({ children, initialSession }: AppShellProps) {
             })}
           />
         ) : null}
-      </PostHogClientProvider>
+      </ErrorTrackingProvider>
     </Suspense>
   );
 }

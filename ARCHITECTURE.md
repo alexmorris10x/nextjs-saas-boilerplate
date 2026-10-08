@@ -1262,13 +1262,14 @@ module.exports = {
 **Reasoning:**
 - PostHog error tracking is GA (not beta), battle-tested at scale
 - 100K free exceptions/month vs Sentry's 5K on free tier
-- Session replay + error tracking = better debugging context than Sentry breadcrumbs
-- One fewer vendor — analytics, session replay, feature flags, AND error tracking in one tool
+- Exception monitoring remains available without product analytics
+- RouteRev owns product analytics; session replay, feature flags and surveys are disabled
 - `@posthog/nextjs-config` auto-uploads source maps during Vercel builds (symbolicated stack traces)
 - Vercel function logs cover server-side error visibility
 
 **Setup:**
-- `capture_exceptions: true` in PostHog client init (`instrumentation-client.ts`)
+- `capture_exceptions: true` with an exception-only event filter in `instrumentation-client.ts`
+- Optional RouteRev goal/identify hooks in `src/shared/analytics/routerev.client.ts`; its installation snippet is required for delivery
 - `@posthog/nextjs-config` wrapping `next.config` for source map uploads (conditional — only when `POSTHOG_PERSONAL_API_KEY` and `POSTHOG_ENV_ID` are set)
 - Server-side env vars: `POSTHOG_PERSONAL_API_KEY` (personal API key), `POSTHOG_ENV_ID` (project/environment ID)
 

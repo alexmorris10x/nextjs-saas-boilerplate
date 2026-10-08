@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { SubscriptionStatus } from "@prisma/client";
-import { identifyUser } from "@/shared/analytics/posthog.client";
+import { identifyUser } from "@/shared/analytics/routerev.client";
 import DeferThirdParties from "./DeferThirdParties";
 
 /**

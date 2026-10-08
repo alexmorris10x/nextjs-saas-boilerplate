@@ -23,7 +23,8 @@ Every pattern exists for a reason. This documentation explains not just *what* t
 | API Layer | Composable middleware stack | Validation, rate limiting, caching without repetition |
 | State | Zustand + React Query | Local state simple, server state cached and synchronized |
 | UI | TailwindCSS + DaisyUI | Utility-first CSS, pre-built accessible components |
-| Analytics | PostHog + Vercel Analytics | Self-hostable product analytics + Web Vitals |
+| Product analytics | RouteRev hooks | Optional goal and identity calls after adding the RouteRev installation snippet |
+| Error tracking | PostHog | Exception capture and conditional source-map uploads only |
 | Architecture | Enforced boundaries via ESLint | Prevents spaghetti code as codebase grows |
 
 ## Requirements
@@ -96,8 +97,6 @@ src/
 │   ├── hooks/               # Custom React hooks
 │   ├── utils/               # Helper functions
 │   └── types/               # TypeScript definitions
-└── lib/                     # Third-party integrations
-    └── posthog/             # Analytics setup
 ```
 
 ### Why This Structure?
@@ -394,7 +393,7 @@ STRIPE_WEBHOOK_SECRET="whsec_..."
 STRIPE_PRICE_ID_MONTHLY="price_..."
 STRIPE_PRICE_ID_YEARLY="price_..."
 
-# Analytics (optional)
+# Exception monitoring (optional)
 NEXT_PUBLIC_POSTHOG_KEY="phc_..."
 NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
 
@@ -402,6 +401,8 @@ NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
 UPSTASH_REDIS_REST_URL="https://..."
 UPSTASH_REDIS_REST_TOKEN="..."
 ```
+
+Product analytics use the optional `window.rr` API in `src/shared/analytics/routerev.client.ts`. Add your RouteRev dashboard installation snippet to enable delivery. PostHog is limited to exceptions; pageviews, product events, profiles, feature flags, session recording and surveys are disabled.
 
 ### OAuth Setup
 

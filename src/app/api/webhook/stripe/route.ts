@@ -3,9 +3,6 @@ import { getStripe } from "@/shared/utils/stripe.utils";
 import prisma from "@/shared/utils/database.utils";
 import { Prisma } from "@prisma/client";
 import Stripe from "stripe";
-import { capturePosthogEvent, flushPosthog } from "@/lib/posthog/server";
-import { ANALYTICS_EVENTS } from "@/shared/analytics/events";
-import type { AnalyticsEventName } from "@/shared/analytics/events";
 
 type CheckoutSessionWithExpanded = Stripe.Checkout.Session & {
   payment_method?: string | Stripe.PaymentMethod | null;
@@ -124,8 +121,6 @@ export const POST = async (request: NextRequest) => {
       { error: "Webhook handler failed" },
       { status: 500 }
     );
-  } finally {
-    await flushPosthog();
   }
 };
 
@@ -200,12 +195,6 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     });
 
     console.log(`Subscription canceled for user: ${user.email}`);
-    const reason =
-      subscription.cancellation_details?.comment ||
-      subscription.cancellation_details?.feedback ||
-      subscription.cancellation_details?.reason ||
-      "unknown";
-    await captureLifecycleEvent(user.id, ANALYTICS_EVENTS.CANCEL, { reason });
   } catch (error) {
     console.error(
       "Error updating user after subscription cancellation:",
@@ -344,23 +333,13 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
       ? await stripe.subscriptions.retrieve(subscriptionId)
       : null;
 
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { customerId: invoice.customer as string },
       data: {
         subscriptionStatus: subscription ? mapStripeStatusToPrisma(subscription.status) : "active",
       },
     });
     console.log(`Payment succeeded for customer: ${invoice.customer}`);
-    const { plan, interval } = extractPlanDetailsFromSubscription(subscription);
-    await captureLifecycleEvent(user.id, ANALYTICS_EVENTS.SUBSCRIBE, {
-      plan,
-      interval,
-      amount:
-        typeof invoice.amount_paid === "number"
-          ? invoice.amount_paid / 100
-          : undefined,
-      currency: invoice.currency?.toUpperCase(),
-    });
   } catch (error) {
     console.error("Error handling invoice payment success:", error);
   }
@@ -402,30 +381,6 @@ async function handleInvoiceFinalized(invoice: Stripe.Invoice) {
     console.error("Error handling invoice finalization:", error);
   }
   // NOTE: See comment in handleCheckoutSessionCompleted regarding dual write paths.
-}
-
-function extractPlanDetailsFromSubscription(
-  subscription: Stripe.Subscription | null
-) {
-  const item = subscription?.items?.data?.[0];
-  const price = item?.price;
-  return {
-    plan: price?.nickname ?? price?.id ?? "unknown",
-    interval: price?.recurring?.interval ?? null,
-  };
-}
-
-async function captureLifecycleEvent(
-  distinctId: string | null | undefined,
-  event: AnalyticsEventName,
-  properties?: Record<string, unknown>
-) {
-  if (!distinctId) return;
-  await capturePosthogEvent({
-    distinctId,
-    event,
-    properties,
-  });
 }
 
 function getInvoiceSubscriptionId(invoice: Stripe.Invoice) {

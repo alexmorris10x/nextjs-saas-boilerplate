@@ -1,10 +1,8 @@
 // Central source of truth for analytics event identifiers.
-// Defaults map to the canonical event IDs, while env vars allow
-// ops to override without code changes.
+// RouteRev goals use stable event identifiers.
 export const ANALYTICS_EVENTS = Object.freeze({
-  SIGN_UP: process.env.POSTHOG_SIGNUP_EVENT?.trim() || "sign_up",
-  ONBOARDING_COMPLETE:
-    process.env.POSTHOG_ACTIVATION_EVENT?.trim() || "onboarding_complete",
+  SIGN_UP: "sign_up",
+  ONBOARDING_COMPLETE: "onboarding_complete",
   START_TRIAL: "start_trial",
   FIRST_VALUE: "first_value",
   SUBSCRIBE: "subscribe",

@@ -8,8 +8,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/shared/utils/database.utils";
 import { getStripe } from "@/shared/utils/stripe.utils";
 import Stripe from "stripe";
-import { capturePosthogEvent, flushPosthog } from "@/lib/posthog/server";
-import { ANALYTICS_EVENTS } from "@/shared/analytics/events";
 
 /**
  * Custom adapter that wraps PrismaAdapter to handle orphaned users
@@ -155,24 +153,6 @@ const authOptions: AuthOptions = {
           priceId: null,
         },
       });
-
-      // Fire and forget analytics - don't await, don't block auth flow
-      // Using setTimeout to ensure this doesn't block the OAuth callback
-      setTimeout(async () => {
-        try {
-          await capturePosthogEvent({
-            distinctId: user.id,
-            event: ANALYTICS_EVENTS.SIGN_UP,
-            properties: {
-              plan: "free",
-              email,
-            },
-          });
-          await flushPosthog();
-        } catch (error) {
-          console.error("[Auth] PostHog analytics failed:", error);
-        }
-      }, 0);
 
       if (isDev) console.log("[Auth] createUser event complete");
     },

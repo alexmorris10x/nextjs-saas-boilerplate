@@ -1,6 +1,5 @@
-'use client';
+"use client";
 
-import { initPosthog, posthog } from "../../../instrumentation-client";
 import { ANALYTICS_EVENTS } from "./events";
 import type { AnalyticsEventName } from "./events";
 
@@ -13,9 +12,10 @@ type IdentifyPayload = {
 
 type EventProperties = Record<string, unknown>;
 
-function ensurePosthogReady() {
-  if (typeof window === "undefined") return false;
-  return initPosthog();
+declare global {
+  interface Window {
+    rr?: (command: "goal" | "identify", value: string, properties?: EventProperties) => void;
+  }
 }
 
 function sanitize<T extends EventProperties>(properties?: T) {
@@ -27,33 +27,16 @@ function sanitize<T extends EventProperties>(properties?: T) {
   );
 }
 
+// RouteRev's install snippet queues calls before its collector script loads.
+// With no snippet configured, analytics are disabled rather than sent elsewhere.
 export function identifyUser(payload: IdentifyPayload) {
-  if (!payload.id) return;
-  if (!ensurePosthogReady()) return;
-
-  const distinctId = posthog.get_distinct_id();
-  if (distinctId && distinctId !== payload.id) {
-    posthog.alias(payload.id);
-  }
-
-  posthog.identify(
-    payload.id,
-    sanitize({
-      email: payload.email || undefined,
-      plan: payload.plan || undefined,
-      createdAt: payload.createdAt || undefined,
-    })
-  );
+  if (typeof window === "undefined" || !payload.id) return;
+  window.rr?.("identify", payload.id);
 }
 
-export function captureEvent(
-  event: AnalyticsEventName | string,
-  properties?: EventProperties
-) {
-  if (!event) return;
-  if (!ensurePosthogReady()) return;
-
-  posthog.capture(event, sanitize(properties));
+export function captureEvent(event: AnalyticsEventName | string, properties?: EventProperties) {
+  if (typeof window === "undefined" || !event) return;
+  window.rr?.("goal", event, sanitize(properties));
 }
 
 export function captureSignUp(plan?: string | null, ref?: string | null) {
