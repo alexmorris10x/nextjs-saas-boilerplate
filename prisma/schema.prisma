@@ -78,11 +78,21 @@ model User {
   subscriptionEndDate DateTime?
   paymentFingerprint  String?   @unique
 
+  // Feedback access and immutable first-touch attribution
+  compUntil         DateTime?
+  accessSource      String?
+  feedbackPassCode  String?
+  signupRef         String?
+  signupUtmSource   String?
+  signupUtmMedium   String?
+  signupUtmCampaign String?
+
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  subscriptions Subscription[]
-  settings      UserSettings?
+  feedbackPassRedemptions FeedbackPassRedemption[]
+  accounts                Account[]
+  sessions                Session[]
+  subscriptions           Subscription[]
+  settings                UserSettings?
 
   @@index([customerId])
   @@index([subscriptionStatus])
@@ -156,4 +166,42 @@ model UserSettings {
 enum Theme {
   light
   dark
+}
+
+// No billing objects are created by feedback passes.
+model FeedbackPass {
+  id          String                   @id @default(cuid())
+  code        String                   @unique
+  months      Int                      @default(3)
+  maxUses     Int                      @default(100)
+  uses        Int                      @default(0)
+  expiresAt   DateTime?
+  note        String?
+  createdAt   DateTime                 @default(now())
+  redemptions FeedbackPassRedemption[]
+}
+
+// A durable ledger keeps repeated redemptions idempotent across different codes.
+model FeedbackPassRedemption {
+  id             String       @id @default(cuid())
+  userId         String
+  feedbackPassId String
+  createdAt      DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedbackPass   FeedbackPass @relation(fields: [feedbackPassId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, feedbackPassId])
+}
+
+model WaitlistSignup {
+  id                     String    @id @default(cuid())
+  email                  String    @unique
+  source                 String?
+  product                String?
+  createdAt              DateTime  @default(now())
+  confirmationSentAt     DateTime?
+  confirmationClaimToken String?
+  confirmationClaimedAt  DateTime?
+
+  @@index([createdAt])
 }

@@ -49,3 +49,6 @@ public/sw.js
 backups/
 *.sql
 *.dump
+
+# Checked-in schema migrations are source, not database backups
+!prisma/migrations/**/migration.sql
