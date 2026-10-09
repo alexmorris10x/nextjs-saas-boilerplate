@@ -85,7 +85,7 @@ Run `npm ci`, `npm run lint`, `npm test`, `npm run type-check`, `npm run ci:smok
 
 `prisma/migrations/` includes the original-schema baseline and the app-standard migration. `prisma migrate deploy` applies both to a fresh PostgreSQL database. If an existing app already has tables, follow Prisma's normal migration-baselining workflow before applying the app-standard migration; do not run the fresh-database baseline against populated tables.
 
-Optional database tests require `APP_STANDARD_TEST_DATABASE_URL` pointing to an isolated loopback fixture/test/acceptance database. They never run against production. Enable the waitlist only after configuring Postmark and the database; `.env.example` documents its flag and sender variables. Local waitlist limiting is per process, so a copied production app should also keep its shared edge/proxy limit configured.
+Optional database tests require `APP_STANDARD_TEST_DATABASE_URL` pointing to an isolated loopback fixture/test/acceptance database. They never run against production. Mount the reusable `ButtonLead` component on your prelaunch page first (the starter landing page does not mount it). Enable the waitlist only after configuring Postmark and the database; `.env.example` documents its flag and sender variables. Local waitlist limiting is per process, so a copied production app should also keep its shared edge/proxy limit configured.
 
 Create a feedback invitation with `node scripts/create-pass.mjs --code FEEDBACK --months 3 --max-uses 100 --note "Feedback group"`; add `--expires <ISO-date>` if needed. `--dry-run` validates options and prints the `/pass/FEEDBACK` URL without a database write. Actual creation uses the configured database and is an operator action for the copied app.
 

@@ -82,7 +82,7 @@ export function getPublicRobots(site = publicSite) {
       userAgent: "*",
       allow: "/",
       // No trailing slash: block the actual /dashboard and /settings pages too.
-      disallow: ["/api/", "/app", "/dashboard", "/settings", "/auth", "/pass/"],
+      disallow: ["/api/", "/app", "/dashboard", "/settings", "/auth", "/pass/", "/stripe"],
     }],
     sitemap: `${site.url}/sitemap.xml`,
   };

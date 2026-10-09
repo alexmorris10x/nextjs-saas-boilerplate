@@ -89,6 +89,7 @@ async function handleRequest(request: NextRequest) {
     currentPath === "/api/webhook/stripe";
   const isCreateCheckoutSession =
     currentPath === "/api/stripe/create-checkout-session";
+  const isPublicWaitlistRoute = currentPath === "/api/waitlist";
 
   const shouldBypassSubscriptionCheck = BYPASS_SUBSCRIPTION_CHECK_ROUTES.some(
     (route) => currentPath.startsWith(route)
@@ -102,6 +103,7 @@ async function handleRequest(request: NextRequest) {
     isRealtimeHealth ||
     isStripeWebhook ||
     isCreateCheckoutSession ||
+    isPublicWaitlistRoute ||
     shouldBypassSubscriptionCheck
   ) {
     return NextResponse.next();

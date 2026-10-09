@@ -20,15 +20,16 @@ export function loadTypescript(filename, mocks = {}) {
       if (name.startsWith("@/")) target = path.join(root, name.slice(2));
       else if (name.startsWith(".")) target = path.resolve(path.dirname(file), name);
       if (target) {
-        if (target.endsWith(".mjs") || target.endsWith(".js")) return realRequire(target);
+        if (target.endsWith(".js")) return realRequire(target);
         if (!existsSync(target)) target += ".ts";
         return load(target);
       }
       return realRequire(name);
     }
     const { outputText } = ts.transpileModule(readFileSync(file, "utf8"), {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-      fileName: file,
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+      // Compile project ESM as CommonJS too; Node 20.9 cannot require ESM.
+      fileName: file.endsWith(".mjs") ? `${file}.ts` : file,
     });
     const execute = vm.runInThisContext(`(function(require,module,exports,__filename,__dirname){${outputText}\n})`, { filename: file });
     execute(requireModule, module, module.exports, file, path.dirname(file));

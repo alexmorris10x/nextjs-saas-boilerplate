@@ -123,6 +123,7 @@ This template build does not deploy or migrate any existing live app.
 - Postmark confirmation · implemented · Postmark helper/sender
 - DB-backed delivery lease · implemented · `WaitlistSignup` confirmation fields
 - Default flag is off: `NEXT_PUBLIC_WAITLIST_ENABLED=false`.
+- ButtonLead is reusable and unmounted by default; a copied prelaunch app mounts it on its chosen page.
 - Disabled form is hidden and disabled API refuses new signup requests.
 - Failed delivery releases the lease so a later duplicate request can retry.
 - Postmark timeout is ten seconds; abandoned claims become retryable after five minutes.

@@ -15,7 +15,7 @@ export default async function AppLayout({
   const session = await getServerSession(authOptions);
   const user = session?.user?.id ? await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { compUntil: true, accessSource: true },
+    select: { compUntil: true, accessSource: true, feedbackPassCode: true },
   }) : null;
   return <AppShell initialSession={session}><FeedbackAccessBanner user={user} />{children}</AppShell>;
 }

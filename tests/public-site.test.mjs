@@ -54,7 +54,7 @@ test("robots blocks exact authenticated URLs and publishes the normalized sitema
   const robots = getPublicRobots(site);
   assert.equal(robots.sitemap, "https://example.com/sitemap.xml");
   assert.equal(robots.rules[0].allow, "/");
-  for (const privatePath of ["/dashboard", "/dashboard/child", "/settings", "/api/private", "/pass/FEEDBACK"]) {
+  for (const privatePath of ["/dashboard", "/dashboard/child", "/settings", "/api/private", "/pass/FEEDBACK", "/stripe", "/stripe/processing-payment", "/stripe/subscription-success", "/stripe/trial-offer"]) {
     assert.ok(robots.rules[0].disallow.some((prefix) => privatePath.startsWith(prefix)), privatePath);
   }
 });
