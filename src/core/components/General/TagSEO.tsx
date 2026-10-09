@@ -2,6 +2,7 @@
 
 import Head from "next/head";
 import React from "react";
+import { publicSite } from "@/shared/config/public-site.mjs";
 
 interface OpenGraphProps {
   title?: string;
@@ -22,14 +23,14 @@ interface TagSEOProps {
 // Predefined SEO tags — prefilled with default values but you can customize them for each page
 // This let you add default SEO tags to all pages, like /terms, /privacy, without rewrtting them all
 const defaults = {
-  title: `up to 50 characters | ${process.env["NEXT_PUBLIC_APP_NAME"]}`,
-  description: "60 to 180 characters",
-  keywords: `${process.env["NEXT_PUBLIC_APP_NAME"]}, some other keywords if needed`,
+  title: publicSite.title,
+  description: publicSite.description,
+  keywords: publicSite.name,
   og: {
-    title: `up to 50 characters | ${process.env["NEXT_PUBLIC_APP_NAME"]}`,
-    description: "60 to 180 characters",
-    image: `https://${process.env["NEXT_PUBLIC_DOMAIN_NAME"]}/shareMain.png`,
-    url: `https://${process.env["NEXT_PUBLIC_DOMAIN_NAME"]}/`,
+    title: publicSite.title,
+    description: publicSite.description,
+    image: new URL(publicSite.shareImage, publicSite.url).href,
+    url: publicSite.url,
   },
 };
 
@@ -76,12 +77,11 @@ const TagSEO = ({
       />
       <meta property="og:url" content={og?.url || defaults.og.url} />
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:creator" content="@marc_louvion" />
 
       {/* CANONICAL TAG */}
       <link
         rel="canonical"
-        href={`https://${process.env["NEXT_PUBLIC_DOMAIN_NAME"]}/${canonicalSlug}`}
+        href={new URL(canonicalSlug.replace(/^\/+/, ""), `${publicSite.url}/`).href}
       />
 
       {/* CHILDREN TAGS */}

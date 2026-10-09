@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
+import { hasSessionPaidAccess } from "@/shared/utils/paid-access.mjs";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -100,11 +101,11 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold">Current Plan</p>
-                  <p className="text-base-content/70">Free tier</p>
+                  <p className="text-base-content/70">{hasSessionPaidAccess(session?.user) ? "Full access" : "Free tier"}</p>
                 </div>
-                <Link href="/pricing" className="btn btn-primary">
-                  Upgrade
-                </Link>
+                {!hasSessionPaidAccess(session?.user) && (
+                  <Link href="/pricing" className="btn btn-primary">Upgrade</Link>
+                )}
               </div>
             </div>
           </div>

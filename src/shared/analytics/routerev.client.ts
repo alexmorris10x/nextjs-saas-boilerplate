@@ -1,6 +1,7 @@
 "use client";
 
 import { ANALYTICS_EVENTS } from "./events";
+import { shouldTrackPurchase } from "@/shared/utils/paid-access.mjs";
 import type { AnalyticsEventName } from "./events";
 
 type IdentifyPayload = {
@@ -8,9 +9,12 @@ type IdentifyPayload = {
   email?: string | null;
   plan?: string | null;
   createdAt?: string | null;
+  isInternal?: boolean;
+  accessSource?: string | null;
 };
 
 type EventProperties = Record<string, unknown>;
+let currentUser: IdentifyPayload | null = null;
 
 declare global {
   interface Window {
@@ -29,13 +33,17 @@ function sanitize<T extends EventProperties>(properties?: T) {
 
 // RouteRev's install snippet queues calls before its collector script loads.
 // With no snippet configured, analytics are disabled rather than sent elsewhere.
-export function identifyUser(payload: IdentifyPayload) {
-  if (typeof window === "undefined" || !payload.id) return;
+export function identifyUser(payload: IdentifyPayload | null) {
+  if (typeof window === "undefined") return;
+  if (!payload?.id) { currentUser = null; return; }
+  currentUser = payload;
   window.rr?.("identify", payload.id);
 }
 
 export function captureEvent(event: AnalyticsEventName | string, properties?: EventProperties) {
   if (typeof window === "undefined" || !event) return;
+  // Purchase goals must have a known external, non-feedback account context.
+  if ([ANALYTICS_EVENTS.SUBSCRIBE, "purchase", "stripe_subscription_success"].includes(event) && !shouldTrackPurchase(currentUser)) return;
   window.rr?.("goal", event, sanitize(properties));
 }
 

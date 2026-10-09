@@ -1,0 +1,17 @@
+# [App name]
+
+> [One-line description: what this app does and why it is useful.]
+
+## Who it's for
+
+[Describe the people this app helps and their main use case.]
+
+## Key pages
+
+- [Home](/): [Product overview and the main call to action.]
+- [Pricing](/pricing): [Plans, features and billing details.]
+
+## Notes
+
+[Replace these placeholders before launch. Add links to public documentation,
+support and legal pages when those pages exist. Keep authenticated pages out.]

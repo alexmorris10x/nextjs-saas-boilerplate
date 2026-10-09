@@ -1,3 +1,5 @@
+Superseded by [docs/SPEC.md](docs/SPEC.md) for current features, screens and access rules; retained for historical architecture context.
+
 # Architecture Guide
 
 This document provides an in-depth explanation of the architectural decisions in this Next.js SaaS boilerplate. Understanding the "why" behind each choice will help you make informed decisions when building on top of this foundation.

@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import authOptions from "@/shared/auth/authOptions";
 import prisma from "@/shared/utils/database.utils";
 import { withMiddleware } from "@/app/api/_middleware";
+import { hasPaidAccess, isInternalAccount } from "@/shared/utils/access.server";
 
 /**
  * POST /api/stripe/create-checkout-session
@@ -37,6 +38,9 @@ export const POST = withMiddleware(async (request: NextRequest) => {
       email: true,
       customerId: true,
       subscriptionStatus: true,
+      hasLifetimeAccess: true,
+      compUntil: true,
+      accessSource: true,
     },
   });
   if (!user?.email) {
@@ -44,6 +48,11 @@ export const POST = withMiddleware(async (request: NextRequest) => {
       { error: "User not found / missing email" },
       { status: 400 }
     );
+  }
+
+  // Complimentary/internal entitlements do not create billing objects.
+  if (isInternalAccount(user.email) || (hasPaidAccess(user) && user.accessSource === "feedback") || user.hasLifetimeAccess) {
+    return NextResponse.json({ url: new URL("/dashboard", request.url).toString() });
   }
 
   // ───────────── Disposable‑email guard ─────────────

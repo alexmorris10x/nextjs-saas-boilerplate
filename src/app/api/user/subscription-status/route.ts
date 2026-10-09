@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import prisma from "@/shared/utils/database.utils";
 import { withMiddleware } from "@/app/api/_middleware";
+import { hasPaidAccess, canAccessApp } from "@/shared/utils/access.server";
 
 /**
  * API endpoint that directly checks the database for the current user's subscription status.
@@ -30,6 +31,9 @@ export const GET = withMiddleware(async (request: NextRequest) => {
         id: true,
         email: true,
         subscriptionStatus: true,
+        hasLifetimeAccess: true,
+        compUntil: true,
+        accessSource: true,
         subscriptionId: true,
         priceId: true,
         subscriptionEndDate: true,
@@ -48,6 +52,10 @@ export const GET = withMiddleware(async (request: NextRequest) => {
     // Return subscription data
     return NextResponse.json({
       status: user.subscriptionStatus,
+      hasPaidAccess: hasPaidAccess(user),
+      canAccessApp: canAccessApp(user),
+      compUntil: user.compUntil,
+      accessSource: user.accessSource,
       subscriptionId: user.subscriptionId,
       priceId: user.priceId,
       subscriptionEndDate: user.subscriptionEndDate,

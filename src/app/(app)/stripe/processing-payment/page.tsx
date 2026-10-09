@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import type { SessionUser } from "@/shared/types/user.types";
+import { hasSessionPaidAccess } from "@/shared/utils/paid-access.mjs";
 import type { SubscriptionStatus } from "@/shared/types/enum/subscript-status.enum";
 
 export default function ProcessingPaymentPage() {
@@ -48,6 +49,11 @@ export default function ProcessingPaymentPage() {
         console.log(
           `[ProcessingPayment] Got session with status: ${subStatus}`
         );
+
+        if (hasSessionPaidAccess(fresh.user)) {
+          router.replace("/dashboard");
+          return;
+        }
 
         switch (subStatus) {
           case "active":
@@ -100,7 +106,7 @@ export default function ProcessingPaymentPage() {
           const data = await response.json();
           console.log(`[ProcessingPayment] DB check: ${data.status}`);
 
-          if (data.status === "active" || data.status === "trialing") {
+          if (data.hasPaidAccess || data.status === "trialing") {
             setStatusMessage(
               "Subscription confirmed in database! Redirecting..."
             );

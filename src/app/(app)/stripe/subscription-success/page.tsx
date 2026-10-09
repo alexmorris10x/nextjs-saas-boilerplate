@@ -5,16 +5,17 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { logEvent } from "@/shared/utils/analytics";
 import Link from "next/link";
+import { shouldTrackPurchase } from "@/shared/utils/paid-access.mjs";
 
 export default function SubscriptionSuccess() {
   const router = useRouter();
   const { update } = useSession();
 
   useEffect(() => {
-    logEvent("stripe_subscription_success");
     console.log("[SubscriptionSuccess] Triggering session update...");
     update()
-      .then(() => {
+      .then((fresh) => {
+        if (shouldTrackPurchase(fresh?.user)) logEvent("stripe_subscription_success");
         console.log(
           "[SubscriptionSuccess] Session updated successfully. Redirecting to /home..."
         );

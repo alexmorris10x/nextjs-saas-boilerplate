@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { hasSessionPaidAccess } from "@/shared/utils/paid-access.mjs";
 
 interface BoardUsageData {
   current: number;
@@ -23,7 +24,7 @@ export function useBoardUsage() {
           current: 0,
           limit: 5,
           remaining: 5,
-          isPaid: session?.user?.subscriptionStatus === "active",
+          isPaid: hasSessionPaidAccess(session?.user),
         }
       : null;
 

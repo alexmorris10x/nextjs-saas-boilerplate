@@ -5,9 +5,10 @@ import { AuthOptions } from "next-auth";
 import type { Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { cookies } from "next/headers";
+import { FIRST_TOUCH_COOKIE_NAME, getSignupAttribution } from "@/shared/utils/first-touch-attribution.mjs";
 import prisma from "@/shared/utils/database.utils";
-import { getStripe } from "@/shared/utils/stripe.utils";
-import Stripe from "stripe";
+import { hasPaidAccess, isInternalAccount } from "@/shared/utils/access.server";
 
 /**
  * Custom adapter that wraps PrismaAdapter to handle orphaned users
@@ -20,6 +21,14 @@ function createSafeAdapter(): Adapter {
 
   return {
     ...baseAdapter,
+    // Capture attribution in the first insert, before any createUser event runs.
+    // Existing-account lookups/updates never rewrite these immutable fields.
+    async createUser(data: Parameters<NonNullable<typeof baseAdapter.createUser>>[0]) {
+      const cookie = (await cookies()).get(FIRST_TOUCH_COOKIE_NAME)?.value;
+      return prisma.user.create({
+        data: { ...data, ...getSignupAttribution(cookie) },
+      });
+    },
     // Override linkAccount to clean up orphaned users before linking
     async linkAccount(account: Parameters<NonNullable<typeof baseAdapter.linkAccount>>[0]) {
       // First, check if user exists but has no accounts (orphaned)
@@ -75,7 +84,7 @@ function createSafeAdapter(): Adapter {
 /**
  * Next‑Auth configuration
  * – Google provider only (email login removed)
- * – Creates a Stripe Customer on user creation
+ * – Creates Stripe customers lazily in checkout, never during free sign-up
  * – Embeds `subscriptionStatus`, `uuid`, `email` in the JWT so the client
  *   can react without extra DB queries
  */
@@ -108,43 +117,14 @@ const authOptions: AuthOptions = {
       const isDev = process.env.NODE_ENV === "development";
       if (isDev) console.log("[Auth] createUser event started for:", user.email);
 
-      const stripe = getStripe();
       const email = user.email ?? undefined;
       const displayName = user.name || email?.split("@")[0] || "";
 
-      let customer = null;
-      if (email) {
-        const existing = await stripe.customers.list({
-          email,
-          limit: 1,
-        });
-        const activeCustomer = existing.data.find(
-          (entry): entry is Stripe.Customer =>
-            !("deleted" in entry)
-        );
-        customer = activeCustomer ?? null;
-      }
-
-      if (!customer) {
-        customer = await stripe.customers.create({
-          email,
-          name: displayName,
-          metadata: { internalUserId: user.id },
-        });
-        if (isDev) console.log("[Auth] Stripe customer created:", customer.id);
-      } else if (!customer.metadata?.internalUserId) {
-        await stripe.customers.update(customer.id, {
-          metadata: {
-            ...customer.metadata,
-            internalUserId: customer.metadata?.internalUserId ?? user.id,
-          },
-        });
-      }
-
+      // Checkout creates a customer only when billing is actually requested.
+      // Internal and feedback accounts can sign up without any Stripe objects.
       await prisma.user.update({
         where: { id: user.id },
         data: {
-          customerId: customer.id,
           subscriptionStatus: "new",
           onboardingCompleted: false,
           name: displayName,
@@ -189,6 +169,9 @@ const authOptions: AuthOptions = {
             subscriptionStatus: true,
             email: true,
             hasLifetimeAccess: true,
+            compUntil: true,
+            accessSource: true,
+            feedbackPassCode: true,
             onboardingCompleted: true,
             name: true,
             image: true,
@@ -200,6 +183,9 @@ const authOptions: AuthOptions = {
           token.uuid = dbUser.uuid;
           token.subscriptionStatus = dbUser.subscriptionStatus;
           token.hasLifetimeAccess = dbUser.hasLifetimeAccess;
+          token.compUntil = dbUser.compUntil?.toISOString() ?? null;
+          token.accessSource = dbUser.accessSource;
+          token.feedbackPassCode = dbUser.feedbackPassCode;
           token.onboardingCompleted = dbUser.onboardingCompleted;
           token.createdAt = dbUser.createdAt?.toISOString() ?? null;
           if (dbUser.email) token.email = dbUser.email;
@@ -223,6 +209,14 @@ const authOptions: AuthOptions = {
       const subscriptionStatus = (token.subscriptionStatus as string) ?? "new";
       const hasLifetimeAccess = (token.hasLifetimeAccess as boolean) ?? false;
 
+      const accessUser = {
+        email: token.email,
+        subscriptionStatus,
+        hasLifetimeAccess,
+        compUntil: (token.compUntil as string | null) ?? null,
+      };
+      const paidAccess = hasPaidAccess(accessUser);
+
       session.user = {
         id: userId,
         name: (token.name as string) ?? null,
@@ -231,8 +225,13 @@ const authOptions: AuthOptions = {
         uuid: (token.uuid as string) ?? null,
         subscriptionStatus,
         hasLifetimeAccess,
+        isInternal: isInternalAccount(token.email),
+        hasPaidAccess: paidAccess,
+        compUntil: accessUser.compUntil,
+        accessSource: (token.accessSource as string | null) ?? null,
+        feedbackPassCode: (token.feedbackPassCode as string | null) ?? null,
         onboardingCompleted: (token.onboardingCompleted as boolean) ?? false,
-        plan: hasLifetimeAccess || subscriptionStatus === "active" ? "paid" : "free",
+        plan: paidAccess ? "paid" : "free",
         createdAt: (token.createdAt as string) ?? null,
       };
 

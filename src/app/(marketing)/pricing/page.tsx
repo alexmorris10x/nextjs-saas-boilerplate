@@ -1,25 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getPublicPageMetadata } from "@/shared/config/public-site.mjs";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Pricing — Simple, transparent pricing",
-  description: "Start free, upgrade when you need more features.",
-  alternates: {
-    canonical: "/pricing",
-  },
-  openGraph: {
-    title: "Pricing — Simple, transparent pricing",
-    description: "Start free, upgrade when you need more features.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Pricing — Simple, transparent pricing",
-    description: "Start free, upgrade when you need more features.",
-  },
-};
+export const metadata: Metadata = getPublicPageMetadata("/pricing");
 
 const plans = [
   {

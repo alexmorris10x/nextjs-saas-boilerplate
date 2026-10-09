@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken, JWT } from "next-auth/jwt";
 import { SessionUser } from "@/shared/types/user.types";
-import { SubscriptionStatus } from "@/shared/types/enum/subscript-status.enum";
+import { hasPaidAccess, canAccessApp } from "@/shared/utils/paid-access.mjs";
+import { captureFirstTouch } from "@/shared/utils/first-touch-attribution.mjs";
 
 type CustomToken = SessionUser & JWT;
 
@@ -24,6 +25,9 @@ const ALLOW_PREFIXES = [
   "/favicon.ico",
   "/manifest.json",
   "/robots.txt",
+  "/sitemap.xml",
+  "/llms.txt",
+  "/pass/",
   "/realtime",
   "/api/realtime/token",
   "/api/auth",
@@ -50,7 +54,7 @@ const BYPASS_SUBSCRIPTION_CHECK_ROUTES = [
   "/stripe/subscription-expired",
 ];
 
-export async function middleware(request: NextRequest) {
+async function handleRequest(request: NextRequest) {
   const currentPath = request.nextUrl.pathname;
   const envBaseUrl =
     process.env.BASE_URL ||
@@ -69,10 +73,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (token?.id && currentPath === "/") {
-    return NextResponse.redirect(new URL("/home", baseUrl));
+    return NextResponse.redirect(new URL("/dashboard", baseUrl));
   }
 
   const isPublicRoute = PUBLIC_ROUTES.includes(currentPath);
+  if (token && hasPaidAccess(token) && currentPath === "/stripe/subscription-expired") {
+    return NextResponse.redirect(new URL("/dashboard", baseUrl));
+  }
   const isNextAuthRoute = currentPath.startsWith("/api/auth");
   const isTokenRoute = currentPath === "/api/auth/token";
   const isRealtimeWs = currentPath.startsWith("/realtime");
@@ -100,91 +107,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (token?.id) {
-    // Lifetime access users bypass all subscription checks
-    if (token.hasLifetimeAccess) {
-      if (isPublicRoute) {
-        return NextResponse.redirect(new URL("/home", baseUrl));
-      }
-      return NextResponse.next();
-    }
-
-    const subscriptionStatus = token.subscriptionStatus as SubscriptionStatus;
-
-    if (isCreateCheckoutSession) {
-      return NextResponse.next();
-    }
-
-    const statusRedirects: Record<
-      SubscriptionStatus,
-      { condition: boolean; url: string }
-    > = {
-      [SubscriptionStatus.new]: {
-        condition: isPublicRoute,
-        url: "/home",
-      },
-      [SubscriptionStatus.active]: {
-        condition: isPublicRoute,
-        url: "/home",
-      },
-      [SubscriptionStatus.trialing]: {
-        condition: isPublicRoute,
-        url: "/home",
-      },
-      [SubscriptionStatus.expired]: {
-        condition: !currentPath.startsWith("/stripe/subscription-expired"),
-        url: "/stripe/subscription-expired",
-      },
-      [SubscriptionStatus.canceled]: {
-        condition: !currentPath.startsWith("/stripe/subscription-expired"),
-        url: "/stripe/subscription-expired",
-      },
-      [SubscriptionStatus.past_due]: {
-        condition: !currentPath.startsWith("/stripe/subscription-expired"),
-        url: "/stripe/subscription-expired",
-      },
-      [SubscriptionStatus.incomplete]: {
-        condition: !currentPath.startsWith("/stripe/subscription-expired"),
-        url: "/stripe/subscription-expired",
-      },
-      [SubscriptionStatus.incomplete_expired]: {
-        condition: !currentPath.startsWith("/stripe/subscription-expired"),
-        url: "/stripe/subscription-expired",
-      },
-      [SubscriptionStatus.paused]: {
-        condition: !currentPath.startsWith("/stripe/subscription-expired"),
-        url: "/stripe/subscription-expired",
-      },
-      [SubscriptionStatus.unpaid]: {
-        condition: !currentPath.startsWith("/stripe/subscription-expired"),
-        url: "/stripe/subscription-expired",
-      },
-    };
-
-    const statusRedirect = statusRedirects[subscriptionStatus];
-
-    if (statusRedirect?.condition) {
-      const targetUrl = new URL(statusRedirect.url, baseUrl);
-      console.log(
-        `[middleware] Auth user with subscription "${subscriptionStatus}" is being redirected from "${currentPath}" to "${targetUrl}"`
-      );
-      return NextResponse.redirect(targetUrl);
+  if (token?.id || token?.sub) {
+    if (!canAccessApp(token)) {
+      return NextResponse.redirect(new URL("/stripe/subscription-expired", baseUrl));
     }
   } else if (!isPublicRoute) {
-    const targetUrl = new URL("/", baseUrl);
-    console.log(
-      `[middleware] Unauthenticated user tried to access "${currentPath}". Redirecting to "${targetUrl}".`
-    );
-    return NextResponse.redirect(targetUrl);
+    return NextResponse.redirect(new URL("/", baseUrl));
   }
 
   return NextResponse.next();
+}
+
+export async function middleware(request: NextRequest) {
+  return captureFirstTouch(request, await handleRequest(request));
 }
 
 export const config = {
   matcher: [
     "/",
     // Exclude websocket gateway path to avoid blocking upgrades
-    "/((?!realtime|health-realtime|api/auth/token|api/auth|api/mcp|api/stripe/webhook|api/webhook/stripe|ingest|monitoring|collect|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|.*.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!realtime|health-realtime|api/auth/token|api/auth|api/mcp|api/stripe/webhook|api/webhook/stripe|ingest|monitoring|collect|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|llms.txt|.*.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

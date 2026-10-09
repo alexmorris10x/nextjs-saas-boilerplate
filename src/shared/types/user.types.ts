@@ -12,6 +12,9 @@ export interface User {
   priceId?: string | null;
   onboardingCompleted: boolean;
   hasLifetimeAccess: boolean;
+  compUntil?: Date | null;
+  accessSource?: string | null;
+  feedbackPassCode?: string | null;
   uuid: string;
   createdAt: Date;
   updatedAt: Date;
@@ -22,9 +25,14 @@ export type SessionUser = {
   subscriptionStatus: SubscriptionStatus;
   name?: string | null;
   image?: string | null;
-  uuid?: string;
+  uuid?: string | null;
   onboardingCompleted?: boolean;
   hasLifetimeAccess?: boolean;
+  hasPaidAccess?: boolean;
+  isInternal?: boolean;
+  compUntil?: string | null;
+  accessSource?: string | null;
+  feedbackPassCode?: string | null;
   email?: string | null;
   plan?: string | null;
   createdAt?: string | null;

@@ -32,7 +32,7 @@ Every pattern exists for a reason. This documentation explains not just *what* t
 - **Node.js 20.9+** — Required by Next.js 16
 - **PostgreSQL database** — Neon, Supabase, or self-hosted
 - **Stripe account** — For payment processing
-- **OAuth credentials** — Google (and optionally GitHub)
+- **OAuth credentials** — Google (the template uses Google only)
 
 > **Why these requirements?** Next.js 16 requires Node 20.9 or newer. PostgreSQL is battle-tested for transactional SaaS workloads. Stripe handles PCI compliance so you don't have to.
 
@@ -59,12 +59,44 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see your app.
 
+## App standard checklist
+
+This is reusable source scaffolding, not a deployed product. The current rules and screens are in [docs/SPEC.md](docs/SPEC.md); shared vocabulary is in [CONTEXT.md](CONTEXT.md).
+
+| # | Part | Where it lives |
+|---|------|----------------|
+| 1 | Dev and production | `main` development source; copied app chooses production deployment |
+| 2 | Project setup | `package.json`, `prisma/`, `src/shared/auth/authOptions.ts`, `vercel.json` (`iad1`) |
+| 3 | Payments | `/api/stripe/create-checkout-session`, `/api/webhook/stripe`; promotion codes enabled |
+| 4 | Our own accounts excluded | `INTERNAL_ACCOUNT_EMAILS`, `internal-account.mjs`, `access.server.ts`, [internal accounts guide](docs/internal-accounts.md) |
+| 5 | Email | `src/shared/utils/postmark.utils.ts`; Postmark transactional sender |
+| 6 | Public page | `public-site.mjs`, root metadata, `public/og-image.png`, `robots.ts`, `sitemap.ts`, `public/llms.txt` |
+| 7 | Ready to measure | `src/shared/analytics/routerev.client.ts`, first-touch middleware cookie and User signup fields |
+| 8 | Feedback pass | `/pass/[code]`, `FeedbackPass`, `FeedbackPassRedemption`, `feedback-pass.mjs`, `scripts/create-pass.mjs` |
+| 9 | Waitlist | `ButtonLead`, `/api/waitlist`, `WaitlistSignup`; `NEXT_PUBLIC_WAITLIST_ENABLED` defaults off |
+| 10 | Referral | Not designed yet; intentionally absent |
+| 11 | Affiliate | Not designed yet; intentionally absent |
+| 12 | The blueprint | `docs/SPEC.md` and `CONTEXT.md` |
+| 13 | Clean repo | No new instruction files or machine paths; existing root guardrail retained |
+
+### Template checks
+
+Run `npm ci`, `npm run lint`, `npm test`, `npm run type-check`, `npm run ci:smoke` and `npm run build` locally. Unit tests use `node --test` and mock provider calls. The smoke gate checks anonymous checkout, invalid Stripe webhook signatures and security headers. Do not enable private-repository GitHub Actions for these checks.
+
+`prisma/migrations/` includes the original-schema baseline and the app-standard migration. `prisma migrate deploy` applies both to a fresh PostgreSQL database. If an existing app already has tables, follow Prisma's normal migration-baselining workflow before applying the app-standard migration; do not run the fresh-database baseline against populated tables.
+
+Optional database tests require `APP_STANDARD_TEST_DATABASE_URL` pointing to an isolated loopback fixture/test/acceptance database. They never run against production. Enable the waitlist only after configuring Postmark and the database; `.env.example` documents its flag and sender variables. Local waitlist limiting is per process, so a copied production app should also keep its shared edge/proxy limit configured.
+
+Create a feedback invitation with `node scripts/create-pass.mjs --code FEEDBACK --months 3 --max-uses 100 --note "Feedback group"`; add `--expires <ISO-date>` if needed. `--dry-run` validates options and prints the `/pass/FEEDBACK` URL without a database write. Actual creation uses the configured database and is an operator action for the copied app.
+
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
 | [README.md](README.md) | This file — overview and quick start |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Deep dive into architectural decisions |
+| [docs/SPEC.md](docs/SPEC.md) | Current app blueprint and standard-parts inventory |
+| [CONTEXT.md](CONTEXT.md) | Shared domain glossary |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Historical architecture reference; superseded feature rules live in the blueprint |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Guidelines for contributing |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [SECURITY.md](SECURITY.md) | Security policy and best practices |

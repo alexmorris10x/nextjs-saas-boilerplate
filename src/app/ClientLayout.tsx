@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { SubscriptionStatus } from "@prisma/client";
 import { identifyUser } from "@/shared/analytics/routerev.client";
 import DeferThirdParties from "./DeferThirdParties";
+import { canSessionAccessApp } from "@/shared/utils/paid-access.mjs";
 
 /**
  * Client-side layout component that provides a safety net polling mechanism
@@ -28,18 +29,22 @@ export default function ClientLayout({
         plan?: string | null;
         subscriptionStatus?: SubscriptionStatus;
         createdAt?: string | null;
+        isInternal?: boolean;
+        accessSource?: string | null;
       }
     | undefined;
 
   useEffect(() => {
-    if (status !== "authenticated") return;
-    if (!sessionUser?.id) return;
+    if (status === "unauthenticated") { identifyUser(null); return; }
+    if (status !== "authenticated" || !sessionUser?.id) return;
 
     identifyUser({
       id: sessionUser.id,
       email: sessionUser.email ?? null,
       plan: sessionUser.plan ?? sessionUser.subscriptionStatus ?? null,
       createdAt: sessionUser.createdAt ?? null,
+      isInternal: sessionUser.isInternal,
+      accessSource: sessionUser.accessSource,
     });
   }, [
     status,
@@ -48,6 +53,8 @@ export default function ClientLayout({
     sessionUser?.plan,
     sessionUser?.subscriptionStatus,
     sessionUser?.createdAt,
+    sessionUser?.isInternal,
+    sessionUser?.accessSource,
   ]);
 
   // Safety net polling to detect subscription status changes
@@ -62,11 +69,7 @@ export default function ClientLayout({
         const freshSession = await update();
 
         // Check if subscription is expired/canceled and redirect if needed
-        if (
-          freshSession?.user?.subscriptionStatus === SubscriptionStatus.expired ||
-          freshSession?.user?.subscriptionStatus === SubscriptionStatus.canceled ||
-          freshSession?.user?.subscriptionStatus === SubscriptionStatus.past_due
-        ) {
+        if (freshSession?.user && !canSessionAccessApp(freshSession.user)        ) {
           console.log('[ClientLayout] Detected inactive subscription during polling, redirecting to subscription-expired');
           router.replace('/stripe/subscription-expired');
         }

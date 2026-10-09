@@ -1,23 +1,7 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { getPublicRobots } from "@/shared/config/public-site.mjs";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_APP_URL || process.env.SITE_URL || "http://localhost:3000";
-
-/**
- * Dynamic robots.txt generation.
- *
- * Blocks crawlers from authenticated app routes and API endpoints.
- * Allows all public marketing pages.
- */
+/** Crawling rules are not an access control; private pages still require auth. */
 export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/app/", "/dashboard/", "/settings/", "/auth/"],
-      },
-    ],
-    sitemap: `${siteUrl}/sitemap.xml`,
-  };
+  return getPublicRobots();
 }
